@@ -117,15 +117,16 @@ def detect_objects(
             verbose=False,
         )[0]
 
-        # Get annotated image
+        # Get annotated image (convert BGR to RGB)
         annotated_image = results.plot()
+        annotated_image = annotated_image[:, :, ::-1]
 
         # Generate summary
         if results.boxes is not None and len(results.boxes) > 0:
-            # Count detections per class
+            # Count detections per class (use model's class names)
             class_counts: dict[str, int] = {}
             for cls_id in results.boxes.cls.cpu().numpy():
-                cls_name = VISDRONE_CLASSES[int(cls_id)]
+                cls_name = model.names[int(cls_id)]
                 class_counts[cls_name] = class_counts.get(cls_name, 0) + 1
 
             summary_lines = [f"**Total detections: {len(results.boxes)}**\n"]
