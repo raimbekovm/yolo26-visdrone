@@ -1,0 +1,46 @@
+# VisDrone Dataset Configuration for Hydra
+
+# Dataset info
+name: visdrone
+description: "VisDrone-DET dataset for drone-based object detection"
+source: "http://aiskyeye.com/"
+ultralytics_config: "VisDrone.yaml"
+
+# Dataset paths (relative to datasets/)
+paths:
+  train: VisDrone/VisDrone2019-DET-train/images
+  val: VisDrone/VisDrone2019-DET-val/images
+  test: VisDrone/VisDrone2019-DET-test-dev/images
+
+# Dataset statistics
+statistics:
+  train_images: 6471
+  val_images: 548
+  test_images: 1610
+  total_images: 8629
+
+# Classes
+num_classes: 10
+classes:
+  0: pedestrian
+  1: people
+  2: bicycle
+  3: car
+  4: van
+  5: truck
+  6: tricycle
+  7: awning-tricycle
+  8: bus
+  9: motor
+
+# Object size distribution (approximate)
+size_distribution:
+  small_ratio: 0.65    # <32x32 pixels
+  medium_ratio: 0.25   # 32x32 to 96x96 pixels
+  large_ratio: 0.10    # >96x96 pixels
+
+# Preprocessing
+preprocessing:
+  imgsz: 640
+  normalize: true
+  augment: true

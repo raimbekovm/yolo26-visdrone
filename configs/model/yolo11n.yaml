@@ -1,0 +1,35 @@
+# YOLO11n Model Configuration
+
+name: yolo11n
+version: "11"
+variant: "nano"
+
+# Model architecture
+architecture:
+  type: "yolo11"
+  backbone: "c2f"
+  neck: "sppf"
+  head: "detect"
+
+# YOLO11 features
+features:
+  c2f_blocks: true           # Cross-stage partial with fusion
+  sppf: true                 # Spatial Pyramid Pooling Fast
+  nms_required: true         # Requires NMS post-processing
+
+# Model specifications (nano variant)
+specifications:
+  depth_multiple: 0.33
+  width_multiple: 0.25
+  parameters: "~2.6M"
+  gflops: "~6.5"
+
+# Pretrained weights
+weights:
+  pretrained: "yolo11n.pt"
+  trained: null  # Will be set after training
+
+# Detection head settings
+head:
+  num_classes: 10  # VisDrone classes
+  anchors: null    # Anchor-free in YOLO11

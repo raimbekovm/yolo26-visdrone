@@ -1,0 +1,56 @@
+# YOLO26-VisDrone Benchmark Configuration
+# Hydra main config file
+
+defaults:
+  - data: visdrone
+  - model: yolo26n
+  - training: default
+  - _self_
+
+# Project settings
+project:
+  name: yolo26-visdrone
+  description: "YOLO26 vs YOLO11 benchmark on VisDrone dataset"
+  author: "Murat Raimbekov"
+  version: "0.1.0"
+
+# Output paths
+paths:
+  root: ${hydra:runtime.cwd}
+  data: ${paths.root}/datasets
+  runs: ${paths.root}/runs/detect
+  results: ${paths.root}/results
+  assets: ${paths.root}/assets
+
+# Benchmark settings
+benchmark:
+  models:
+    - yolo26n
+    - yolo11n
+  metrics:
+    - mAP50
+    - mAP50-95
+    - AP_small
+    - AP_medium
+    - AP_large
+  speed_test:
+    warmup_runs: 10
+    test_runs: 100
+    devices:
+      - gpu
+      - cpu
+
+# HuggingFace settings
+huggingface:
+  repo_id: "raimbekovm/yolo26-visdrone"
+  # Token should be set via environment variable HF_TOKEN
+
+# Hydra configuration
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}
+  job:
+    chdir: false

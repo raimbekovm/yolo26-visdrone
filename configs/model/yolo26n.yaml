@@ -1,0 +1,37 @@
+# YOLO26n Model Configuration
+
+name: yolo26n
+version: "26"
+variant: "nano"
+
+# Model architecture
+architecture:
+  type: "yolo26"
+  backbone: "darknet"
+  neck: "pafpn"
+  head: "detect"
+
+# YOLO26 specific features
+features:
+  area_attention: true        # Area Attention (AA)
+  prog_loss: true            # Progressive Loss for small objects
+  stal: true                 # Spatial-channel Token Attention Layer
+  nms_free: true             # End-to-end detection without NMS
+
+# Model specifications (nano variant)
+specifications:
+  depth_multiple: 0.33
+  width_multiple: 0.25
+  # Expected values (to be verified)
+  parameters: "~2.6M"
+  gflops: "~6.0"
+
+# Pretrained weights
+weights:
+  pretrained: "yolo26n.pt"
+  trained: null  # Will be set after training
+
+# Detection head settings
+head:
+  num_classes: 10  # VisDrone classes
+  anchors: null    # Anchor-free
