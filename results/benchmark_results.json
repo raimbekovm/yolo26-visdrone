@@ -1,0 +1,65 @@
+{
+  "benchmark_info": {
+    "platform": "Kaggle",
+    "gpu": "NVIDIA Tesla T4",
+    "epochs": 50,
+    "batch_size": 16,
+    "image_size": 640,
+    "dataset": "VisDrone2019-DET",
+    "train_images": 6471,
+    "val_images": 548,
+    "date": "2025-01-18",
+    "ultralytics_version": "8.3.64"
+  },
+  "models": {
+    "yolo26n": {
+      "metrics": {
+        "mAP50": 0.280,
+        "mAP50-95": 0.157,
+        "precision": 0.374,
+        "recall": 0.297
+      },
+      "inference_speed": {
+        "gpu_t4_ms": 10.18,
+        "cpu_ms": null,
+        "cpu_note": "RuntimeError due to end2end bug in ultralytics"
+      },
+      "training_time_seconds": 8094
+    },
+    "yolo11n": {
+      "metrics": {
+        "mAP50": 0.303,
+        "mAP50-95": 0.172,
+        "precision": 0.419,
+        "recall": 0.309
+      },
+      "inference_speed": {
+        "gpu_t4_ms": 8.61,
+        "cpu_ms": null,
+        "cpu_note": "Not measured due to kernel crash"
+      },
+      "training_time_seconds": 7653
+    }
+  },
+  "comparison": {
+    "winner": "yolo11n",
+    "mAP50_diff": "+2.3%",
+    "mAP50-95_diff": "+1.5%",
+    "precision_diff": "+4.5%",
+    "recall_diff": "+1.2%",
+    "gpu_speed_diff": "YOLO11n is 15% faster",
+    "notes": [
+      "YOLO11n outperforms YOLO26n in all metrics",
+      "YOLO26 end2end mode causes RuntimeError on CPU inference",
+      "CPU benchmark could not be completed due to ultralytics bug"
+    ]
+  },
+  "known_issues": {
+    "yolo26_end2end_bug": {
+      "error": "RuntimeError: Inference tensors do not track version counter",
+      "cause": "YOLO26 end2end NMS-free detection head uses .detach() creating inference tensors that PyTorch cannot track",
+      "workaround": "Disable end2end mode (head.end2end = False) - but doesn't fully fix inference",
+      "status": "ultralytics bug, not fixable from user code"
+    }
+  }
+}

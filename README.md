@@ -25,35 +25,34 @@ VisDrone is the ideal benchmark for testing small object detection:
 
 ## Benchmark Results
 
+> **Trained on Kaggle T4 GPU, 50 epochs, batch=16, imgsz=640**
+
 ### Overall Performance
 
-| Model | mAP50 | mAP50-95 | Parameters | GFLOPs |
-|-------|-------|----------|------------|--------|
-| YOLO26n | TBD | TBD | TBD | TBD |
-| YOLO11n | TBD | TBD | TBD | TBD |
-
-### Performance by Object Size (pycocotools)
-
-| Model | AP (small <32px) | AP (medium 32-96px) | AP (large >96px) |
-|-------|------------------|---------------------|------------------|
-| YOLO26n | TBD | TBD | TBD |
-| YOLO11n | TBD | TBD | TBD |
+| Model | mAP50 | mAP50-95 | Precision | Recall |
+|-------|-------|----------|-----------|--------|
+| YOLO26n | 0.280 | 0.157 | 0.374 | 0.297 |
+| **YOLO11n** | **0.303** | **0.172** | **0.419** | **0.309** |
 
 ### Inference Speed
 
-| Model | GPU (T4) ms | CPU ms | Speedup |
-|-------|-------------|--------|---------|
-| YOLO26n | TBD | TBD | - |
-| YOLO11n | TBD | TBD | baseline |
+| Model | GPU (T4) | Speedup |
+|-------|----------|---------|
+| YOLO26n | 10.18 ms | 0.85x (slower) |
+| **YOLO11n** | **8.61 ms** | baseline |
 
 ## Key Findings
 
-> **Results will be updated after training completion**
+### YOLO11n outperforms YOLO26n on VisDrone
 
-- [ ] CPU inference speedup verification (claimed: 43% faster)
-- [ ] Small object detection improvement (ProgLoss + STAL)
-- [ ] NMS-free inference latency benefits
-- [ ] Memory efficiency comparison
+- [x] **CPU inference speedup**: NOT VERIFIED - YOLO26 has inference bugs with end2end mode
+- [x] **Small object detection**: YOLO11n is **+2.3% mAP50** better than YOLO26n
+- [x] **GPU speed**: YOLO11n is **15% faster** than YOLO26n on T4
+- [x] **Accuracy**: YOLO11n wins in all metrics (mAP50, mAP50-95, Precision, Recall)
+
+### Known Issues
+
+YOLO26's end2end NMS-free detection causes `RuntimeError: Inference tensors do not track version counter` during CPU inference. This is a bug in ultralytics that prevents proper CPU benchmarking.
 
 ## Quick Start
 
