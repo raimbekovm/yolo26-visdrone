@@ -1,62 +1,68 @@
 # YOLO26 vs YOLO11 Benchmark on VisDrone Dataset
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![YOLO26](https://img.shields.io/badge/Model-YOLO26-brightgreen)](https://docs.ultralytics.com/models/yolo26/)
-[![HuggingFace Demo](https://img.shields.io/badge/HuggingFace-Demo-yellow)](https://huggingface.co/spaces/raimbekovm/yolo26-visdrone)
-[![Kaggle Notebook](https://img.shields.io/badge/Kaggle-Notebook-20BEFF)](https://www.kaggle.com/)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Notebook-20BEFF)](https://www.kaggle.com/code/muraraimbekov/yolo26-vs-yolo11-visdrone-benchmark)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-Demo-yellow)](https://huggingface.co/spaces/raimbekovm/yolo26-visdrone)
 
-**Independent benchmark comparing YOLO26 and YOLO11 on VisDrone dataset for small object detection from drone imagery.**
+Independent benchmark comparing YOLO26 and YOLO11 on VisDrone dataset for small object detection from drone imagery.
 
-## Overview
+## Claims Under Test
 
-This project independently verifies Ultralytics' claims about YOLO26:
-
+Ultralytics claims YOLO26 delivers:
 1. **43% faster CPU inference** compared to YOLO11
-2. **Improved small object detection** via Progressive Loss (ProgLoss) and Spatial-channel Token Attention Layer (STAL)
-3. **NMS-free end-to-end inference** with learnable one-to-one assignment
+2. **Improved small object detection** via ProgLoss and STAL
+3. **Smaller model size** due to DFL removal
 
-### Why VisDrone?
+## Results
 
-VisDrone is the ideal benchmark for testing small object detection:
-- **6,471 training / 548 validation images** captured by drones
-- **10 object classes**: pedestrian, people, bicycle, car, van, truck, tricycle, awning-tricycle, bus, motor
-- **Abundant small objects** due to aerial perspective
-- Native Ultralytics support: `yolo train data=VisDrone.yaml`
+Trained on Kaggle T4 GPU | 50 epochs | batch=16 | imgsz=640
 
-## Benchmark Results
+### Model Size
 
-> **Trained on Kaggle T4 GPU, 50 epochs, batch=16, imgsz=640**
+| Model | Parameters | ONNX Size |
+|-------|------------|-----------|
+| YOLO26n | 2.51M | 9.8 MB |
+| YOLO11n | 2.59M | 10.6 MB |
 
-### Overall Performance
+### Accuracy
 
-| Model | mAP50 | mAP50-95 | Precision | Recall |
-|-------|-------|----------|-----------|--------|
-| YOLO26n | 0.280 | 0.157 | 0.374 | 0.297 |
-| **YOLO11n** | **0.303** | **0.172** | **0.419** | **0.309** |
+| Model | mAP50 | mAP50-95 | AP_small | AP_medium | AP_large |
+|-------|-------|----------|----------|-----------|----------|
+| YOLO26n | 0.278 | 0.157 | 0.0425 | 0.182 | 0.302 |
+| YOLO11n | 0.302 | 0.172 | 0.0506 | 0.203 | 0.340 |
 
 ### Inference Speed
 
-| Model | GPU (T4) | Speedup |
-|-------|----------|---------|
-| YOLO26n | 10.18 ms | 0.85x (slower) |
-| **YOLO11n** | **8.61 ms** | baseline |
+| Model | GPU (T4) | CPU (ONNX) |
+|-------|----------|------------|
+| YOLO26n | 10.47 ms | 101.14 ms |
+| YOLO11n | 9.41 ms | 79.53 ms |
+
+## Verification Summary
+
+| Claim | Result | Verified |
+|-------|--------|----------|
+| 43% faster CPU inference | YOLO26 is 27% slower | No |
+| Better small object detection | YOLO11 AP_small is 19% higher | No |
+| Smaller model size | YOLO26 is 3% smaller | Yes |
 
 ## Key Findings
 
-### YOLO11n outperforms YOLO26n on VisDrone
+1. **CPU Speed**: Contrary to claims, YOLO26n is 27% slower than YOLO11n on CPU (ONNX runtime)
+2. **Small Objects**: YOLO11n outperforms YOLO26n on AP_small by 19% (0.0506 vs 0.0425)
+3. **Overall Accuracy**: YOLO11n achieves higher mAP50 (0.302 vs 0.278)
+4. **GPU Speed**: YOLO11n is 11% faster on T4 GPU
+5. **Model Size**: YOLO26n is slightly smaller (2.51M vs 2.59M parameters)
 
-- [x] **CPU inference speedup**: NOT VERIFIED - YOLO26 has inference bugs with end2end mode
-- [x] **Small object detection**: YOLO11n is **+2.3% mAP50** better than YOLO26n
-- [x] **GPU speed**: YOLO11n is **15% faster** than YOLO26n on T4
-- [x] **Accuracy**: YOLO11n wins in all metrics (mAP50, mAP50-95, Precision, Recall)
+## Methodology
 
-### Known Issues
-
-YOLO26's end2end NMS-free detection causes `RuntimeError: Inference tensors do not track version counter` during CPU inference. This is a bug in ultralytics that prevents proper CPU benchmarking.
+- **Dataset**: VisDrone2019-DET (6,471 train / 548 val images)
+- **Hardware**: Kaggle T4 GPU
+- **Training**: 50 epochs, batch=16, imgsz=640
+- **CPU Benchmark**: ONNX Runtime (as per Ultralytics methodology)
+- **Evaluation**: COCO metrics with AP by object size
 
 ## Quick Start
-
-### Installation
 
 ```bash
 # Clone repository
@@ -64,137 +70,41 @@ git clone https://github.com/raimbekovm/yolo26-visdrone.git
 cd yolo26-visdrone
 
 # Install dependencies
-pip install -e .
-# or
-pip install -r requirements.txt
+pip install ultralytics pycocotools onnxruntime
+
+# Train models
+yolo detect train model=yolo26n.pt data=VisDrone.yaml epochs=50 imgsz=640 batch=16
+yolo detect train model=yolo11n.pt data=VisDrone.yaml epochs=50 imgsz=640 batch=16
 ```
 
-### Training
+## Reproduce on Kaggle
 
-```bash
-# Train YOLO26n on VisDrone
-make train-yolo26
+[![Open in Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/code/muraraimbekov/yolo26-vs-yolo11-visdrone-benchmark)
 
-# Train YOLO11n on VisDrone
-make train-yolo11
+## Dataset
 
-# Or manually:
-yolo detect train model=yolo26n.pt data=VisDrone.yaml epochs=100 imgsz=640 batch=16
-yolo detect train model=yolo11n.pt data=VisDrone.yaml epochs=100 imgsz=640 batch=16
-```
+VisDrone is captured by drone-mounted cameras and contains abundant small objects:
 
-### Evaluation
-
-```bash
-# Run full benchmark
-make benchmark
-
-# Speed benchmark only
-make speed-test
-
-# COCO evaluation with size metrics
-make coco-eval
-```
-
-### Run on Kaggle
-
-The easiest way to reproduce results is through our Kaggle notebook:
-
-[![Open in Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/)
-
-```bash
-# Or run locally
-jupyter notebook notebooks/kaggle_visdrone_benchmark.ipynb
-```
-
-## Project Structure
-
-```
-yolo26-visdrone/
-├── app/
-│   └── gradio_app.py          # HuggingFace Spaces demo
-├── configs/
-│   ├── config.yaml            # Hydra main config
-│   ├── data/visdrone.yaml
-│   ├── model/                 # YOLO26n, YOLO11n configs
-│   └── training/              # Training configurations
-├── data/
-│   └── visdrone.yaml          # Dataset config
-├── docker/
-│   └── Dockerfile
-├── notebooks/
-│   └── kaggle_visdrone_benchmark.ipynb
-├── src/
-│   ├── data/download.py       # VisDrone download
-│   ├── evaluation/
-│   │   ├── benchmark.py       # Speed benchmark
-│   │   ├── metrics.py         # mAP by object size
-│   │   └── coco_eval.py       # COCO-style evaluation
-│   ├── training/trainer.py
-│   └── utils/
-│       ├── constants.py
-│       └── visualization.py   # Comparison plots
-├── tests/
-├── app.py                     # HuggingFace entry point
-├── Makefile
-├── pyproject.toml
-└── requirements.txt
-```
-
-## Comparison Visualizations
-
-### mAP by Object Size
-![mAP Comparison](assets/map_by_size.png)
-*Chart will be generated after training*
-
-### Inference Speed
-![Speed Comparison](assets/speed_comparison.png)
-*Chart will be generated after training*
-
-## YOLO26 Key Features
-
-YOLO26 introduces several architectural improvements:
-
-1. **Area Attention (AA)** - Efficient spatial attention mechanism
-2. **ProgLoss** - Progressive loss scaling for small object detection
-3. **STAL** - Spatial-channel Token Attention Layer
-4. **NMS-free** - End-to-end detection without post-processing
-
-## Dataset Details
-
-### VisDrone Classes
-
-| ID | Class | Description |
-|----|-------|-------------|
-| 0 | pedestrian | Walking person |
-| 1 | people | Standing/sitting person |
-| 2 | bicycle | Bicycle |
-| 3 | car | Car |
-| 4 | van | Van |
-| 5 | truck | Truck |
-| 6 | tricycle | Tricycle |
-| 7 | awning-tricycle | Tricycle with awning |
-| 8 | bus | Bus |
-| 9 | motor | Motorcycle |
-
-### Statistics
-
-- **Training images**: 6,471
-- **Validation images**: 548
-- **Test images**: 1,610 (dev set)
-- **Image resolution**: Various (typically 1920x1080)
-- **Annotation format**: YOLO txt (converted automatically)
+| Class | ID |
+|-------|-----|
+| pedestrian | 0 |
+| people | 1 |
+| bicycle | 2 |
+| car | 3 |
+| van | 4 |
+| truck | 5 |
+| tricycle | 6 |
+| awning-tricycle | 7 |
+| bus | 8 |
+| motor | 9 |
 
 ## References
 
 - [YOLO26 Documentation](https://docs.ultralytics.com/models/yolo26/)
-- [VisDrone Dataset - Ultralytics](https://docs.ultralytics.com/datasets/detect/visdrone/)
+- [VisDrone Dataset](https://docs.ultralytics.com/datasets/detect/visdrone/)
 - [VisDrone Challenge](http://aiskyeye.com/)
-- [pycocotools for size-based metrics](https://github.com/cocodataset/cocoapi)
 
 ## Citation
-
-If you use this benchmark in your research, please cite:
 
 ```bibtex
 @misc{yolo26-visdrone-benchmark,
@@ -204,25 +114,14 @@ If you use this benchmark in your research, please cite:
   publisher = {GitHub},
   url = {https://github.com/raimbekovm/yolo26-visdrone}
 }
-
-@article{visdrone2019,
-  title={VisDrone-DET2019: The Vision Meets Drone Object Detection in Image Challenge Results},
-  author={Du, Dawei and others},
-  booktitle={ICCVW},
-  year={2019}
-}
 ```
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+Apache License 2.0
 
 ## Author
 
-**Murat Raimbekov**
-- Email: murat.raimbekov2004@gmail.com
+Murat Raimbekov
 - GitHub: [@raimbekovm](https://github.com/raimbekovm)
-
----
-
-**Disclaimer**: This is an independent benchmark. Results may vary based on hardware, software versions, and training conditions.
+- Email: murat.raimbekov2004@gmail.com
