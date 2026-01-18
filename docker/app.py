@@ -3,8 +3,8 @@ import gradio as gr
 from ultralytics import YOLO
 
 print("Loading models fine-tuned on VisDrone...")
-yolo26 = YOLO("yolo26n.pt")
-yolo11 = YOLO("yolo11n.pt")
+yolo26 = YOLO("yolo26n_visdrone.pt")
+yolo11 = YOLO("yolo11n_visdrone.pt")
 print("Models loaded!")
 
 CLASSES = ['pedestrian', 'people', 'bicycle', 'car', 'van',
